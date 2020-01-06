@@ -1,7 +1,6 @@
 #include <functional>
 #include <cstdlib>
 #include <stdexcept>
-#include <vector>
 #include <iostream>
 
 #include "TriangleApp.h"
@@ -26,6 +25,9 @@ namespace Application
 
 	void TriangleApp::CreateInstance()
 	{
+		if (enableValidationLayers && !CheckValidationLayerSupport())
+			throw std::runtime_error("validation layers requested, but not available");
+
 		VkApplicationInfo appInfo {};
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 		appInfo.pApplicationName = "Triangle App";
@@ -65,15 +67,13 @@ namespace Application
 		const char** requiredExtension{ glfwGetRequiredInstanceExtensions(&extensionCount) };
 
 		bool extensionFound { false };
-		std::string requiredName;
 
 		for (uint32_t i = 0; i < extensionCount; i++)
 		{
 			extensionFound = false;
-			requiredName = requiredExtension[i];
 			for (size_t j = 0; j < extensions.size(); j++)
 			{
-				if (std::string(extensions[j].extensionName) == requiredName)
+				if (strcmp(extensions[j].extensionName, requiredExtension[i]) == 0)
 				{
 					extensionFound = true;
 					break;
@@ -87,7 +87,30 @@ namespace Application
 
 	bool TriangleApp::CheckValidationLayerSupport()
 	{
+		uint32_t layerCount;
+		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
+		std::vector<VkLayerProperties> availableLayers(layerCount);
+		vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+		for (const auto& layerName : _validationLayers)
+		{
+			bool layerFound = false;
+			for (const auto& layerProperties : availableLayers)
+			{
+				std::cout << layerProperties.layerName << std::endl;
+				if (strcmp(layerName, layerProperties.layerName) == 0)
+				{
+					layerFound = true;
+					break;
+				}
+			}
+
+			if (!layerFound)
+				return false;
+		}
+
+		return true;
 	}
 
 	void TriangleApp::MainLoop()

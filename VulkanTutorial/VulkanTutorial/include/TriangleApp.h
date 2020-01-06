@@ -3,6 +3,8 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+#include <vector>
+
 #define WIDTH 800
 #define HEIGHT 600
 
@@ -15,7 +17,7 @@ namespace Application
 		GLFWwindow* _window;
 		VkInstance	_instance;
 
-		const std::vector<const char*> validationLayers = {
+		const std::vector<const char*> _validationLayers {
 			"VK_LAYER_KHRONOS_validation"
 		};
 
