@@ -14,8 +14,10 @@ namespace Application
 	class TriangleApp
 	{
 	private:
-		GLFWwindow* _window;
-		VkInstance	_instance;
+		GLFWwindow*					_window;
+		VkInstance					_instance;
+		VkDebugUtilsMessengerEXT	_debugMessenger;
+		VkPhysicalDevice			_physicalDevice { VK_NULL_HANDLE };
 
 		const std::vector<const char*> _validationLayers {
 			"VK_LAYER_KHRONOS_validation"
@@ -30,10 +32,25 @@ namespace Application
 		void InitWindow();
 		void InitVulkan();
 		void CreateInstance();
+		void SetupDebugMessenger();
+		void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
 		void CheckExtension();
+		std::vector<const char*> GetRequiredEtensions();
 		bool CheckValidationLayerSupport();
+		void PickPhysicalDevice();
+		bool IsDeviceSuitable();
 		void MainLoop();
 		void Cleanup();
+
+
+		VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
+			const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+			const VkAllocationCallbacks* pAllocator,
+			VkDebugUtilsMessengerEXT* pDebugMessenger);
+
+		void DestroyDebugUtilsMessengerEXT(VkInstance instance,
+			VkDebugUtilsMessengerEXT debugMessenger,
+			const VkAllocationCallbacks* pAllocator);
 
 	public:
 		TriangleApp() = default;
@@ -42,5 +59,10 @@ namespace Application
 		~TriangleApp() = default;
 
 		void Run();
+
+		static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+			VkDebugUtilsMessageTypeFlagsEXT messageType,
+			const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+			void* pUserData);
 	};
 }
