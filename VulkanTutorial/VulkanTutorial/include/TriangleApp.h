@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 
 #include <vector>
+#include <optional>
 
 #define WIDTH 800
 #define HEIGHT 600
@@ -18,9 +19,35 @@ namespace Application
 		VkInstance					_instance;
 		VkDebugUtilsMessengerEXT	_debugMessenger;
 		VkPhysicalDevice			_physicalDevice { VK_NULL_HANDLE };
+		VkDevice 					_device;
+		VkSurfaceKHR 				_surface;
+		VkQueue 					_graphicsQueue;
+		VkQueue 					_presentQueue;
 
 		const std::vector<const char*> _validationLayers {
 			"VK_LAYER_KHRONOS_validation"
+		};
+
+		const std::vector<const char*> _deviceExtensions {
+    		VK_KHR_SWAPCHAIN_EXTENSION_NAME
+		};
+
+		struct QueueFamilyIndices
+		{
+    		std::optional<uint32_t> graphicsFamily;
+			std::optional<uint32_t> presentFamily;
+
+    		bool isComplete()
+			{
+        		return graphicsFamily.has_value();
+   			}
+		};
+
+		struct SwapChainSupportDetails
+		{
+    		VkSurfaceCapabilitiesKHR capabilities;
+    		std::vector<VkSurfaceFormatKHR> formats;
+    		std::vector<VkPresentModeKHR> presentModes;
 		};
 
 #ifdef NDEBUG
@@ -32,13 +59,20 @@ namespace Application
 		void InitWindow();
 		void InitVulkan();
 		void CreateInstance();
+		void CreateLogicalDevice();
+		void CreateSurface();
 		void SetupDebugMessenger();
 		void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
 		void CheckExtension();
 		std::vector<const char*> GetRequiredEtensions();
 		bool CheckValidationLayerSupport();
 		void PickPhysicalDevice();
-		bool IsDeviceSuitable();
+		bool IsDeviceSuitable(VkPhysicalDevice device);
+		bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
+		int  RateDeviceSuitability(VkPhysicalDevice device);
+		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
+		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
+		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 		void MainLoop();
 		void Cleanup();
 
