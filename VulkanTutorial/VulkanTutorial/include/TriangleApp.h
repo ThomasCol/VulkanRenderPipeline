@@ -23,6 +23,12 @@ namespace Application
 		VkSurfaceKHR 				_surface;
 		VkQueue 					_graphicsQueue;
 		VkQueue 					_presentQueue;
+		VkSwapchainKHR				_swapChain;
+		std::vector<VkImage>		_swapChainImages;
+		VkFormat					_swapChainImageFormat;
+		VkExtent2D					_swapChainExtent;
+		std::vector<VkImageView>	_swapChainImageViews;
+		VkPipelineLayout			_pipelineLayout;
 
 		const std::vector<const char*> _validationLayers {
 			"VK_LAYER_KHRONOS_validation"
@@ -61,6 +67,10 @@ namespace Application
 		void CreateInstance();
 		void CreateLogicalDevice();
 		void CreateSurface();
+		void CreateSwapChain();
+		void CreateImageViews();
+		void CreateGraphicsPipeline();
+		VkShaderModule CreateShaderModule(const std::vector<char>& code);
 		void SetupDebugMessenger();
 		void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
 		void CheckExtension();
@@ -73,6 +83,8 @@ namespace Application
 		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
 		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 		void MainLoop();
 		void Cleanup();
 

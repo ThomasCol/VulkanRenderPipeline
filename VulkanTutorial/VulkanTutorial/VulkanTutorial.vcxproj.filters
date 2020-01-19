@@ -27,4 +27,11 @@
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Shader\shader.vert" />
+    <None Include="Shader\shader.frag" />
+    <None Include="Shader\compile.bat">
+      <Filter>Fichiers sources</Filter>
+    </None>
+  </ItemGroup>
 </Project>
