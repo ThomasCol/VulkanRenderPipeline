@@ -8,6 +8,7 @@
 
 #define WIDTH 800
 #define HEIGHT 600
+#define MAX_FRAMES_IN_FLIGHT 2
 
 
 namespace Application
@@ -15,20 +16,31 @@ namespace Application
 	class TriangleApp
 	{
 	private:
-		GLFWwindow*					_window;
-		VkInstance					_instance;
-		VkDebugUtilsMessengerEXT	_debugMessenger;
-		VkPhysicalDevice			_physicalDevice { VK_NULL_HANDLE };
-		VkDevice 					_device;
-		VkSurfaceKHR 				_surface;
-		VkQueue 					_graphicsQueue;
-		VkQueue 					_presentQueue;
-		VkSwapchainKHR				_swapChain;
-		std::vector<VkImage>		_swapChainImages;
-		VkFormat					_swapChainImageFormat;
-		VkExtent2D					_swapChainExtent;
-		std::vector<VkImageView>	_swapChainImageViews;
-		VkPipelineLayout			_pipelineLayout;
+		GLFWwindow*						_window;
+		VkInstance						_instance;
+		VkDebugUtilsMessengerEXT		_debugMessenger;
+		VkPhysicalDevice				_physicalDevice { VK_NULL_HANDLE };
+		VkDevice 						_device;
+		VkSurfaceKHR 					_surface;
+		VkQueue 						_graphicsQueue;
+		VkQueue 						_presentQueue;
+		VkSwapchainKHR					_swapChain;
+		std::vector<VkImage>			_swapChainImages;
+		VkFormat						_swapChainImageFormat;
+		VkExtent2D						_swapChainExtent;
+		std::vector<VkImageView>		_swapChainImageViews;
+		VkRenderPass					_renderPass;
+		VkPipelineLayout				_pipelineLayout;
+		VkPipeline						_graphicsPipeline;
+		VkCommandPool					_commandPool;
+		std::vector<VkCommandBuffer>	_commandBuffers;
+		std::vector<VkSemaphore>		_imageAvailableSemaphores;
+		std::vector<VkSemaphore>		_renderFinishedSemaphores;
+		std::vector<VkFence>			_inFlightFences;
+		std::vector<VkFence>			_imagesInFlight;
+		size_t							_currentFrame = 0;
+
+		std::vector<VkFramebuffer>	_swapChainFramebuffers;
 
 		const std::vector<const char*> _validationLayers {
 			"VK_LAYER_KHRONOS_validation"
@@ -69,8 +81,13 @@ namespace Application
 		void CreateSurface();
 		void CreateSwapChain();
 		void CreateImageViews();
+		void CreateRenderPass();
 		void CreateGraphicsPipeline();
 		VkShaderModule CreateShaderModule(const std::vector<char>& code);
+		void CreateFramebuffers();
+		void CreateCommandPool();
+		void CreateCommandBuffers();
+		void CreateSyncObjects();
 		void SetupDebugMessenger();
 		void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
 		void CheckExtension();
@@ -86,6 +103,7 @@ namespace Application
 		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 		void MainLoop();
+		void DrawFrame();
 		void Cleanup();
 
 
