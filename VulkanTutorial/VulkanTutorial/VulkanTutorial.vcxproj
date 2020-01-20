@@ -119,6 +119,9 @@
       <AdditionalLibraryDirectories>$(ProjectDir)Librairies\vulkan\Lib;$(ProjectDir)Librairies\GLFW\lib-vc2019;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>call compileShaders.bat</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -165,6 +168,9 @@
       <AdditionalLibraryDirectories>$(ProjectDir)Librairies\vulkan\Lib;$(ProjectDir)Librairies\GLFW\lib-vc2019;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>call compileShaders.bat</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
@@ -174,7 +180,7 @@
     <ClInclude Include="include\TriangleApp.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shader\compile.bat" />
+    <None Include="compileShaders.bat" />
     <None Include="Shader\shader.frag" />
     <None Include="Shader\shader.vert" />
   </ItemGroup>

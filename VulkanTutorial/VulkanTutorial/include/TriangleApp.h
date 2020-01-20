@@ -6,9 +6,32 @@
 #include <vector>
 #include <optional>
 
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include <chrono>
+#include <array>
+
 #define WIDTH 800
 #define HEIGHT 600
 #define MAX_FRAMES_IN_FLIGHT 2
+
+struct Vertex {
+	glm::vec2 pos;
+	glm::vec3 color;
+
+	static VkVertexInputBindingDescription GetBindingDescription();
+
+	static std::array<VkVertexInputAttributeDescription, 2> GetAttributeDescriptions();
+};
+
+struct UniformBufferObject {
+	glm::mat4 model;
+	glm::mat4 view;
+	glm::mat4 proj;
+};
 
 
 namespace Application
@@ -30,6 +53,7 @@ namespace Application
 		VkExtent2D						_swapChainExtent;
 		std::vector<VkImageView>		_swapChainImageViews;
 		VkRenderPass					_renderPass;
+		VkDescriptorSetLayout			_descriptorSetLayout;
 		VkPipelineLayout				_pipelineLayout;
 		VkPipeline						_graphicsPipeline;
 		VkCommandPool					_commandPool;
@@ -39,8 +63,15 @@ namespace Application
 		std::vector<VkFence>			_inFlightFences;
 		std::vector<VkFence>			_imagesInFlight;
 		size_t							_currentFrame = 0;
-
-		std::vector<VkFramebuffer>	_swapChainFramebuffers;
+		std::vector<VkFramebuffer>		_swapChainFramebuffers;
+		VkBuffer						_vertexBuffer;
+		VkDeviceMemory					_vertexBufferMemory;
+		VkBuffer						_indexBuffer;
+		VkDeviceMemory					_indexBufferMemory;
+		std::vector<VkBuffer>			_uniformBuffers;
+		std::vector<VkDeviceMemory>		_uniformBuffersMemory;
+		VkDescriptorPool				_descriptorPool;
+		std::vector<VkDescriptorSet>	_descriptorSets;
 
 		const std::vector<const char*> _validationLayers {
 			"VK_LAYER_KHRONOS_validation"
@@ -68,6 +99,17 @@ namespace Application
     		std::vector<VkPresentModeKHR> presentModes;
 		};
 
+		const std::vector<Vertex> _vertices = {
+			{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+			{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+			{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+			{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+		};
+
+		const std::vector<uint16_t> indices = {
+			0, 1, 2, 2, 3, 0
+		};
+
 #ifdef NDEBUG
 		const bool enableValidationLayers = false;
 #else
@@ -82,10 +124,19 @@ namespace Application
 		void CreateSwapChain();
 		void CreateImageViews();
 		void CreateRenderPass();
+		void CreateDescriptorSetLayout();
 		void CreateGraphicsPipeline();
 		VkShaderModule CreateShaderModule(const std::vector<char>& code);
 		void CreateFramebuffers();
 		void CreateCommandPool();
+		void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+		void CreateVertexBuffer();
+		void CreateIndexBuffer();
+		void CreateUniformBuffers();
+		void CreateDescriptorPool();
+		void CreateDescriptorSets();
+		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 		void CreateCommandBuffers();
 		void CreateSyncObjects();
 		void SetupDebugMessenger();
@@ -104,7 +155,11 @@ namespace Application
 		VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 		void MainLoop();
 		void DrawFrame();
+		void UpdateUniformBuffer(uint32_t currentImage);
 		void Cleanup();
+		void CleanupSwapChain();
+
+		void RecreateSwapChain();
 
 
 		VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
@@ -128,5 +183,7 @@ namespace Application
 			VkDebugUtilsMessageTypeFlagsEXT messageType,
 			const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 			void* pUserData);
+
+		bool	framebufferResized = false;
 	};
 }

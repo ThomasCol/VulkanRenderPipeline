@@ -28,9 +28,9 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shader\shader.vert" />
     <None Include="Shader\shader.frag" />
-    <None Include="Shader\compile.bat">
+    <None Include="Shader\shader.vert" />
+    <None Include="compileShaders.bat">
       <Filter>Fichiers sources</Filter>
     </None>
   </ItemGroup>
