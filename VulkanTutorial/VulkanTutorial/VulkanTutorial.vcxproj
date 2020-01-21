@@ -177,6 +177,7 @@
     <ClCompile Include="src\TriangleApp.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\stb_image.h" />
     <ClInclude Include="include\TriangleApp.h" />
   </ItemGroup>
   <ItemGroup>

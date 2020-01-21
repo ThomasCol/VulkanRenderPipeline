@@ -17,14 +17,17 @@
 #define WIDTH 800
 #define HEIGHT 600
 #define MAX_FRAMES_IN_FLIGHT 2
+ 
 
 struct Vertex {
 	glm::vec2 pos;
 	glm::vec3 color;
+	glm::vec2 texCoord;
+
 
 	static VkVertexInputBindingDescription GetBindingDescription();
 
-	static std::array<VkVertexInputAttributeDescription, 2> GetAttributeDescriptions();
+	static std::array<VkVertexInputAttributeDescription, 3> GetAttributeDescriptions();
 };
 
 struct UniformBufferObject {
@@ -72,6 +75,10 @@ namespace Application
 		std::vector<VkDeviceMemory>		_uniformBuffersMemory;
 		VkDescriptorPool				_descriptorPool;
 		std::vector<VkDescriptorSet>	_descriptorSets;
+		VkImage							_textureImage;
+		VkDeviceMemory					_textureImageMemory;
+		VkImageView						_textureImageView;
+		VkSampler						_textureSampler;
 
 		const std::vector<const char*> _validationLayers {
 			"VK_LAYER_KHRONOS_validation"
@@ -100,10 +107,10 @@ namespace Application
 		};
 
 		const std::vector<Vertex> _vertices = {
-			{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-			{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-			{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-			{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+			{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+			{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+			{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+			{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
 		};
 
 		const std::vector<uint16_t> indices = {
@@ -129,6 +136,14 @@ namespace Application
 		VkShaderModule CreateShaderModule(const std::vector<char>& code);
 		void CreateFramebuffers();
 		void CreateCommandPool();
+		void CreateTextureImage();
+		void CreateTextureSampler();
+		void CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
+				VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+		void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+		void CreateTextureImageView();
+		VkImageView CreateImageView(VkImage image, VkFormat format);
 		void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 		void CreateVertexBuffer();
 		void CreateIndexBuffer();
@@ -138,6 +153,8 @@ namespace Application
 		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 		void CreateCommandBuffers();
+		VkCommandBuffer BeginSingleTimeCommands();
+		void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 		void CreateSyncObjects();
 		void SetupDebugMessenger();
 		void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
