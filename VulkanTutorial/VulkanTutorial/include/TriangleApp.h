@@ -1,5 +1,7 @@
 #pragma once
 
+#include <shaderc/shaderc.hpp>
+
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
@@ -110,7 +112,7 @@ namespace Application
 		VkImageView						_depthImageView;
 
 		const std::vector<const char*> _validationLayers {
-			"VK_LAYER_KHRONOS_validation"
+			"VK_LAYER_KHRONOS_validation",
 		};
 
 		const std::vector<const char*> _deviceExtensions {
@@ -136,7 +138,7 @@ namespace Application
 		};
 
 #ifdef NDEBUG
-		const bool enableValidationLayers = false;
+		const bool enableValidationLayers = true;
 #else
 		const bool enableValidationLayers = true;
 #endif
@@ -151,7 +153,7 @@ namespace Application
 		void CreateRenderPass();
 		void CreateDescriptorSetLayout();
 		void CreateGraphicsPipeline();
-		VkShaderModule CreateShaderModule(const std::vector<char>& code);
+		VkShaderModule CreateShaderModule(const std::vector<uint32_t>& code);
 		void CreateFramebuffers();
 		void CreateCommandPool();
 		VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
@@ -200,6 +202,7 @@ namespace Application
 		void CleanupSwapChain();
 
 		void RecreateSwapChain();
+		void RecreateGraphicPipeline();
 
 
 		VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,

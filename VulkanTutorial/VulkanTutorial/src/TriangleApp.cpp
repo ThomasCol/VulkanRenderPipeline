@@ -18,6 +18,7 @@
 #include <stb_image.h>
 
 
+
 VkVertexInputBindingDescription Vertex::GetBindingDescription()
 {
 	VkVertexInputBindingDescription bindingDescription {};
@@ -52,20 +53,21 @@ std::array<VkVertexInputAttributeDescription, 3> Vertex::GetAttributeDescription
 
 namespace Application
 {
-	static std::vector<char> readFile(const std::string& filename)
+	static std::string readFile(const std::string& filename)
 	{
-		std::ifstream file(filename, std::ios::ate | std::ios::binary);
-
+		std::string str = filename;
+		std::ifstream file(str, std::ios::ate);
 		if (!file.is_open())
 			throw std::runtime_error("failed to open file!");
 
 		size_t fileSize = (size_t)file.tellg();
-		std::vector<char> buffer(fileSize);
+		std::string buffer(fileSize, ' ');
 
 		file.seekg(0);
-		file.read(buffer.data(), fileSize);
-
+		file.read(&buffer[0], fileSize);
 		file.close();
+
+		buffer[fileSize] = '\0';
 
 		return buffer;
 	}
@@ -89,6 +91,7 @@ namespace Application
 
 	void TriangleApp::InitVulkan()
 	{
+		LoadModel();
 		CreateInstance();
 		SetupDebugMessenger();
 		CreateSurface();
@@ -105,7 +108,6 @@ namespace Application
 		CreateTextureImage();
 		CreateTextureImageView();
 		CreateTextureSampler();
-		LoadModel();
 		CreateVertexBuffer();
 		CreateIndexBuffer();
 		CreateUniformBuffers();
@@ -366,11 +368,31 @@ namespace Application
 
 	void TriangleApp::CreateGraphicsPipeline()
 	{
-		auto vertShaderCode = readFile("Shader/vert.spv");
-		auto fragShaderCode = readFile("Shader/frag.spv");
+		std::string vertShaderCode = readFile("Shader/shader.vert");
+		std::string fragShaderCode = readFile("Shader/shader.frag");
 
-		VkShaderModule vertShaderModule = CreateShaderModule(vertShaderCode);
-		VkShaderModule fragShaderModule = CreateShaderModule(fragShaderCode);
+		shaderc::Compiler compiler;
+
+		shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(vertShaderCode, shaderc_shader_kind::shaderc_glsl_vertex_shader, "vertex");
+		shaderc_compilation_status status =  result.GetCompilationStatus();
+		if (status != shaderc_compilation_status_success)
+		{
+			throw std::runtime_error(result.GetErrorMessage());
+		}
+		std::vector<uint32_t> vertSPV;
+		vertSPV.assign(result.cbegin(), result.cend());
+		result = compiler.CompileGlslToSpv(fragShaderCode, shaderc_shader_kind::shaderc_glsl_fragment_shader, "fragment");
+		status = result.GetCompilationStatus();
+		if (status != shaderc_compilation_status_success)
+		{
+			throw std::runtime_error(result.GetErrorMessage());
+		}
+
+		std::vector<uint32_t> fragSPV;
+		fragSPV.assign(result.cbegin(), result.cend());
+
+		VkShaderModule vertShaderModule = CreateShaderModule(vertSPV);
+		VkShaderModule fragShaderModule = CreateShaderModule(fragSPV);
 
 		VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
 		vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -521,12 +543,12 @@ namespace Application
 		vkDestroyShaderModule(_device, vertShaderModule, nullptr);
 	}
 
-	VkShaderModule TriangleApp::CreateShaderModule(const std::vector<char>& code)
+	VkShaderModule TriangleApp::CreateShaderModule(const std::vector<uint32_t>& code)
 	{
 		VkShaderModuleCreateInfo createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-		createInfo.codeSize = code.size();
-		createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+		createInfo.codeSize = 4*code.size();
+		createInfo.pCode = code.data();
 
 		VkShaderModule shaderModule;
 
@@ -1466,6 +1488,11 @@ namespace Application
 		while (!glfwWindowShouldClose(_window))
 		{
 			glfwPollEvents();
+			int state = glfwGetKey(_window, GLFW_KEY_E);
+			if (state == GLFW_PRESS)
+			{
+				RecreateGraphicPipeline();
+			}
 			DrawFrame();
 		}
 
@@ -1654,6 +1681,18 @@ namespace Application
 		CreateUniformBuffers();
 		CreateDescriptorPool();
 		CreateDescriptorSets();
+		CreateCommandBuffers();
+	}
+
+	void TriangleApp::RecreateGraphicPipeline()
+	{
+		vkDeviceWaitIdle(_device);
+
+		vkDestroyPipeline(_device, _graphicsPipeline, nullptr);
+		vkDestroyPipelineLayout(_device, _pipelineLayout, nullptr);
+		vkFreeCommandBuffers(_device, _commandPool, static_cast<uint32_t>(_commandBuffers.size()), _commandBuffers.data());
+		
+		CreateGraphicsPipeline();
 		CreateCommandBuffers();
 	}
 

@@ -36,5 +36,8 @@
     <None Include="compileShaders.bat">
       <Filter>Fichiers sources</Filter>
     </None>
+    <None Include="RecompileShader.bat">
+      <Filter>Fichiers sources</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -5,7 +5,6 @@
 
 int main()
 {
-	system("call compileShaders.bat");
 	Application::TriangleApp app;
 
 	try
