@@ -110,15 +110,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)Librairies\vulkan\Include;$(ProjectDir)Librairies\GLFW\include;$(ProjectDir)Librairies\glm;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Librairies\vulkan\Include;$(ProjectDir)Librairies\GLFW\include;$(ProjectDir)Librairies\glm;$(ProjectDir)include;$(ProjectDir)Librairies\shaderc\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)Librairies\vulkan\Lib;$(ProjectDir)Librairies\GLFW\lib-vc2019;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)Librairies\vulkan\Lib;$(ProjectDir)Librairies\GLFW\lib-vc2019;$(ProjectDir)Librairies\Shaderc\Lib\Debug_x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;glfw3dll.lib;shaderc_combined.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
@@ -163,7 +163,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)Librairies\vulkan\Include;$(ProjectDir)Librairies\GLFW\include;$(ProjectDir)Librairies\glm;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Librairies\vulkan\Include;$(ProjectDir)Librairies\GLFW\include;$(ProjectDir)Librairies\glm;$(ProjectDir)include;$(ProjectDir)Librairies\shaderc\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -174,7 +174,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)Librairies\vulkan\Lib;$(ProjectDir)Librairies\GLFW\lib-vc2019;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)Librairies\vulkan\Lib;$(ProjectDir)Librairies\GLFW\lib-vc2019;$(ProjectDir)Librairies\Shaderc\Lib\Release_x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;glfw3dll.lib;shaderc_combined.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
@@ -187,12 +187,18 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Camera.cpp" />
+    <ClCompile Include="src\InputManager.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\TriangleApp.cpp" />
+    <ClCompile Include="src\Renderer.cpp" />
+    <ClCompile Include="src\Shader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Camera.h" />
+    <ClInclude Include="include\InputManager.h" />
+    <ClInclude Include="include\Shader.h" />
     <ClInclude Include="include\stb_image.h" />
-    <ClInclude Include="include\TriangleApp.h" />
+    <ClInclude Include="include\Renderer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="compileShaders.bat" />

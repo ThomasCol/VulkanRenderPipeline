@@ -1,11 +1,11 @@
-#include "TriangleApp.h"
+#include "Renderer.h"
 
 #include <stdexcept>
 #include <iostream>
 
 int main()
 {
-	Application::TriangleApp app;
+	Application::Renderer app;
 
 	try
 	{

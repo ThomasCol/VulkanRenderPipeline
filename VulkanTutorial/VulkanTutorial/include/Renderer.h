@@ -1,18 +1,12 @@
 #pragma once
 
-#include <shaderc/shaderc.hpp>
-
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+#include "Shader.h"
+#include "InputManager.h"
 
 #include <vector>
 #include <optional>
 
-#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/glm.hpp>
+#include "Camera.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/hash.hpp>
 
@@ -27,7 +21,8 @@
 #define TEXTURE_PATH "Media/chalet.jpg"
  
 
-struct Vertex {
+struct Vertex
+{
 	glm::vec3 pos;
 	glm::vec3 color;
 	glm::vec2 texCoord;
@@ -65,9 +60,12 @@ struct UniformBufferObject {
 
 namespace Application
 {
-	class TriangleApp
+	class Renderer
 	{
 	private:
+		InputManager					_inputManager;
+		float							_lastFrame;
+		float							_currentFrameTime;
 		GLFWwindow*						_window;
 		VkInstance						_instance;
 		VkDebugUtilsMessengerEXT		_debugMessenger;
@@ -110,6 +108,7 @@ namespace Application
 		VkImage							_depthImage;
 		VkDeviceMemory					_depthImageMemory;
 		VkImageView						_depthImageView;
+		std::vector<Shader>				_shaders;
 
 		const std::vector<const char*> _validationLayers {
 			"VK_LAYER_KHRONOS_validation",
@@ -215,10 +214,10 @@ namespace Application
 			const VkAllocationCallbacks* pAllocator);
 
 	public:
-		TriangleApp() = default;
-		TriangleApp(const TriangleApp& app) = default;
-		TriangleApp(TriangleApp&& app) = default;
-		~TriangleApp() = default;
+		Renderer() = default;
+		Renderer(const Renderer& app) = default;
+		Renderer(Renderer&& app) = default;
+		~Renderer() = default;
 
 		void Run();
 
@@ -228,5 +227,11 @@ namespace Application
 			void* pUserData);
 
 		bool	framebufferResized = false;
+		bool	shaderChanged = false;
+
+		Camera	cam;
+
+		float	deltaTime;
+		bool run = true;
 	};
 }
