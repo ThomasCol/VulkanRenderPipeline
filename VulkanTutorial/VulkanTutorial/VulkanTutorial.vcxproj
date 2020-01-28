@@ -187,18 +187,28 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Buffer.cpp" />
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\InputManager.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Mesh.cpp" />
     <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\Shader.cpp" />
+    <ClCompile Include="src\Texture.cpp" />
+    <ClCompile Include="src\Vertex.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Buffer.h" />
     <ClInclude Include="include\Camera.h" />
+    <ClInclude Include="include\CommandBuffer.h" />
+    <ClInclude Include="include\Helpers.hpp" />
     <ClInclude Include="include\InputManager.h" />
+    <ClInclude Include="include\Mesh.h" />
     <ClInclude Include="include\Shader.h" />
     <ClInclude Include="include\stb_image.h" />
     <ClInclude Include="include\Renderer.h" />
+    <ClInclude Include="include\Texture.h" />
+    <ClInclude Include="include\Vertex.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="compileShaders.bat" />

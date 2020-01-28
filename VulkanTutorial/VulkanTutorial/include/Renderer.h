@@ -7,51 +7,19 @@
 #include <optional>
 
 #include "Camera.h"
+#include "Mesh.h"
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/hash.hpp>
 
 #include <chrono>
-#include <array>
 
 #define WIDTH 800
 #define HEIGHT 600
 #define MAX_FRAMES_IN_FLIGHT 2
 
-#define MODEL_PATH "Media/chalet.obj"
 #define TEXTURE_PATH "Media/chalet.jpg"
- 
 
-struct Vertex
+struct UniformBufferObject
 {
-	glm::vec3 pos;
-	glm::vec3 color;
-	glm::vec2 texCoord;
-
-
-	static VkVertexInputBindingDescription GetBindingDescription();
-
-	static std::array<VkVertexInputAttributeDescription, 3> GetAttributeDescriptions();
-
-	bool operator==(const Vertex& other) const
-	{
-		return pos == other.pos && color == other.color && texCoord == other.texCoord;
-	}
-};
-
-namespace std
-{
-	template<> struct hash<Vertex>
-	{
-		size_t operator()(Vertex const& vertex) const
-		{
-			return ((hash<glm::vec3>()(vertex.pos) ^
-				(hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
-				(hash<glm::vec2>()(vertex.texCoord) << 1);
-		}
-	};
-}
-
-struct UniformBufferObject {
 	glm::mat4 model;
 	glm::mat4 view;
 	glm::mat4 proj;
@@ -64,6 +32,7 @@ namespace Application
 	{
 	private:
 		InputManager					_inputManager;
+		Mesh							_mesh;
 		float							_lastFrame;
 		float							_currentFrameTime;
 		GLFWwindow*						_window;
@@ -91,20 +60,9 @@ namespace Application
 		std::vector<VkFence>			_imagesInFlight;
 		size_t							_currentFrame = 0;
 		std::vector<VkFramebuffer>		_swapChainFramebuffers;
-		std::vector<Vertex>				_vertices;
-		std::vector<uint32_t>			_indices;
-		VkBuffer						_vertexBuffer;
-		VkDeviceMemory					_vertexBufferMemory;
-		VkBuffer						_indexBuffer;
-		VkDeviceMemory					_indexBufferMemory;
-		std::vector<VkBuffer>			_uniformBuffers;
-		std::vector<VkDeviceMemory>		_uniformBuffersMemory;
+		std::vector<Buffer>				_uniformBuffers;
 		VkDescriptorPool				_descriptorPool;
 		std::vector<VkDescriptorSet>	_descriptorSets;
-		VkImage							_textureImage;
-		VkDeviceMemory					_textureImageMemory;
-		VkImageView						_textureImageView;
-		VkSampler						_textureSampler;
 		VkImage							_depthImage;
 		VkDeviceMemory					_depthImageMemory;
 		VkImageView						_depthImageView;
@@ -152,25 +110,17 @@ namespace Application
 		void CreateRenderPass();
 		void CreateDescriptorSetLayout();
 		void CreateGraphicsPipeline();
-		VkShaderModule CreateShaderModule(const std::vector<uint32_t>& code);
 		void CreateFramebuffers();
 		void CreateCommandPool();
 		VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 		VkFormat FindDepthFormat();
 		bool HasStencilComponent(VkFormat format);
 		void CreateDepthResources();
-		void CreateTextureImage();
-		void CreateTextureSampler();
 		void CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
 				VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 		void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
-		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
-		void CreateTextureImageView();
+		void CopyBufferToImage(Buffer buffer, VkImage image, uint32_t width, uint32_t height);
 		VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
-		void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-		void LoadModel();
-		void CreateVertexBuffer();
-		void CreateIndexBuffer();
 		void CreateUniformBuffers();
 		void CreateDescriptorPool();
 		void CreateDescriptorSets();
@@ -199,7 +149,6 @@ namespace Application
 		void UpdateUniformBuffer(uint32_t currentImage);
 		void Cleanup();
 		void CleanupSwapChain();
-
 		void RecreateSwapChain();
 		void RecreateGraphicPipeline();
 

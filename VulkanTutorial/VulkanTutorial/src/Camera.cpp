@@ -72,8 +72,6 @@ namespace Application
 		// We know how to compute the inverse of the camera
 		glm::mat4 ViewTransform = glm::identity<glm::mat4>();
 		ViewTransform = glm::lookAt(position, position + front, up);
-		std::cout << position.x << " " << position.y << " " << position.z << ", " << front.x << " " << front.y << " " << front.z
-			<< ", " << up.x << " " << up.y << " " << up.z << std::endl;
 		return ViewTransform;
 	}
 }
