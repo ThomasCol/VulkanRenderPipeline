@@ -189,6 +189,9 @@
   <ItemGroup>
     <ClCompile Include="src\Buffer.cpp" />
     <ClCompile Include="src\Camera.cpp" />
+    <ClCompile Include="src\CommandBuffer.cpp" />
+    <ClCompile Include="src\CommandPool.cpp" />
+    <ClCompile Include="src\Helpers.cpp" />
     <ClCompile Include="src\InputManager.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
@@ -201,7 +204,8 @@
     <ClInclude Include="include\Buffer.h" />
     <ClInclude Include="include\Camera.h" />
     <ClInclude Include="include\CommandBuffer.h" />
-    <ClInclude Include="include\Helpers.hpp" />
+    <ClInclude Include="include\CommandPool.h" />
+    <ClInclude Include="include\Helpers.h" />
     <ClInclude Include="include\InputManager.h" />
     <ClInclude Include="include\Mesh.h" />
     <ClInclude Include="include\Shader.h" />

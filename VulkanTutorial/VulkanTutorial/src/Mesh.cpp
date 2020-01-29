@@ -58,14 +58,14 @@ Mesh& Mesh::LoadMesh(const char* modelFile, const char* textureFile)
 	_texture.Load(textureFile);
 }
 
-void Mesh::CreateBuffers(VkDevice device, VkPhysicalDevice physicalDevice, VkQueue graphicQueue, VkCommandPool commandPool)
+void Mesh::CreateBuffers(VkDevice device, VkPhysicalDevice physicalDevice, VkQueue graphicQueue, CommandPool commandPool)
 {
 	CreateVertexBuffer(device, physicalDevice, graphicQueue, commandPool);
 	CreateIndexBuffer(device, physicalDevice, graphicQueue, commandPool);
 	_texture.CreateTexture(device, physicalDevice, commandPool, graphicQueue);
 }
 
-void Mesh::CreateVertexBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkQueue graphicQueue, VkCommandPool commandPool)
+void Mesh::CreateVertexBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkQueue graphicQueue, CommandPool commandPool)
 {
 	VkDeviceSize bufferSize = sizeof(_vertices[0]) * _vertices.size();
 
@@ -81,7 +81,7 @@ void Mesh::CreateVertexBuffer(VkDevice device, VkPhysicalDevice physicalDevice, 
 	stagingBuffer.Destroy(device);
 }
 
-void Mesh::CreateIndexBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkQueue graphicQueue, VkCommandPool commandPool)
+void Mesh::CreateIndexBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkQueue graphicQueue, CommandPool commandPool)
 {
 	VkDeviceSize bufferSize = sizeof(_indices[0]) * _indices.size();
 

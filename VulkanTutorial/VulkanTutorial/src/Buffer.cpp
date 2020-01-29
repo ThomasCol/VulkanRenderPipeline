@@ -50,38 +50,16 @@ void Buffer::MapMemory(VkDevice device, VkDeviceSize offset, VkDeviceSize size, 
 	vkUnmapMemory(device, _bufferMemory);
 }
 
-void Buffer::CopyBuffer(VkDevice device, VkQueue graphicQueue, VkCommandPool commandPool, Buffer& dstBuffer, VkDeviceSize size)
+void Buffer::CopyBuffer(VkDevice device, VkQueue graphicQueue, CommandPool commandPool, Buffer& dstBuffer, VkDeviceSize size)
 {
-	VkCommandBufferAllocateInfo allocInfo = {};
-	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	allocInfo.commandPool = commandPool;
-	allocInfo.commandBufferCount = 1;
-
-	VkCommandBuffer commandBuffer;
-	vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer);
-
-	VkCommandBufferBeginInfo beginInfo = {};
-	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-	vkBeginCommandBuffer(commandBuffer, &beginInfo);
+	CommandBuffer commandBuffer;
+	commandBuffer.BeginOneTime(device, commandPool);
 
 	VkBufferCopy copyRegion = {};
 	copyRegion.size = size;
-	vkCmdCopyBuffer(commandBuffer, _buffer, dstBuffer._buffer, 1, &copyRegion);
+	vkCmdCopyBuffer(commandBuffer.Get(), _buffer, dstBuffer._buffer, 1, &copyRegion);
 
-	vkEndCommandBuffer(commandBuffer);
-
-	VkSubmitInfo submitInfo = {};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffer;
-
-	vkQueueSubmit(graphicQueue, 1, &submitInfo, VK_NULL_HANDLE);
-	vkQueueWaitIdle(graphicQueue);
-
-	vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
+	commandBuffer.EndOneTime(device, commandPool, graphicQueue);
 }
 
 void Buffer::Destroy(VkDevice device)

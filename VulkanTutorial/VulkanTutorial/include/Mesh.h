@@ -2,6 +2,7 @@
 
 #include "Vertex.h"
 #include "Texture.h"
+#include "CommandPool.h"
 
 #define MODEL_PATH "Media/chalet.obj"
 
@@ -13,9 +14,9 @@ public:
 
 	Mesh& LoadMesh(const char* modelFile, const char* textureFile = "");
 
-	void CreateVertexBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkQueue graphicQueue, VkCommandPool commandPool);
-	void CreateBuffers(VkDevice device, VkPhysicalDevice physicalDevice, VkQueue graphicQueue, VkCommandPool commandPool);
-	void CreateIndexBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkQueue graphicQueue, VkCommandPool commandPool);
+	void CreateVertexBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkQueue graphicQueue, CommandPool commandPool);
+	void CreateBuffers(VkDevice device, VkPhysicalDevice physicalDevice, VkQueue graphicQueue, CommandPool commandPool);
+	void CreateIndexBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkQueue graphicQueue, CommandPool commandPool);
 
 	void Destroy(VkDevice device);
 

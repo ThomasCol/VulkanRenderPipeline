@@ -1,18 +1,21 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+#include <vulkan/vulkan.h>
 
 #include <vector>
+
+class CommandPool;
 
 class CommandBuffer
 {
 public:
-	CommandBuffer();
-	~CommandBuffer();
+	CommandBuffer() = default;
+	~CommandBuffer() = default;
 
-	void BeginSingleTimeCommands();
-	void EndSingleTimeCommand();
+	CommandBuffer& BeginOneTime(VkDevice device, CommandPool commandPool);
+	void EndOneTime(VkDevice device, CommandPool commandPool, VkQueue graphicsQueue);
+
+	VkCommandBuffer& Get() { return _buffer; }
 
 private:
 	VkCommandBuffer _buffer;

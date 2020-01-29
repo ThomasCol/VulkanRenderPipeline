@@ -9,12 +9,9 @@ public:
 	~Texture() = default;
 
 	void Load(const char* file);
-	void CreateTexture(VkDevice device, VkPhysicalDevice physicalDevice, VkCommandPool commandPool, VkQueue graphicQueue);
-	void TransitionImageLayout(VkDevice device, VkCommandPool commandPool, VkQueue graphicQueue, VkImage image,
-		VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
-	void CopyBufferToImage(VkDevice device, VkCommandPool commandPool, VkQueue graphicQueue, Buffer buffer, VkImage image, uint32_t width, uint32_t height);
+	void CreateTexture(VkDevice device, VkPhysicalDevice physicalDevice, CommandPool commandPool, VkQueue graphicQueue);
+	void CopyBufferToImage(VkDevice device, CommandPool commandPool, VkQueue graphicQueue, Buffer buffer, VkImage image, uint32_t width, uint32_t height);
 	void CreateTextureImageView(VkDevice device);
-	bool HasStencilComponent(VkFormat format);
 	void CreateTextureSampler(VkDevice device);
 
 	void Destroy(VkDevice device);

@@ -2,6 +2,7 @@
 
 #include "Shader.h"
 #include "InputManager.h"
+#include "CommandPool.h"
 
 #include <vector>
 #include <optional>
@@ -52,7 +53,7 @@ namespace Application
 		VkDescriptorSetLayout			_descriptorSetLayout;
 		VkPipelineLayout				_pipelineLayout;
 		VkPipeline						_graphicsPipeline;
-		VkCommandPool					_commandPool;
+		CommandPool						_commandPool;
 		std::vector<VkCommandBuffer>	_commandBuffers;
 		std::vector<VkSemaphore>		_imageAvailableSemaphores;
 		std::vector<VkSemaphore>		_renderFinishedSemaphores;
@@ -95,7 +96,7 @@ namespace Application
 		};
 
 #ifdef NDEBUG
-		const bool enableValidationLayers = true;
+		const bool enableValidationLayers = false;
 #else
 		const bool enableValidationLayers = true;
 #endif
@@ -114,21 +115,12 @@ namespace Application
 		void CreateCommandPool();
 		VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 		VkFormat FindDepthFormat();
-		bool HasStencilComponent(VkFormat format);
 		void CreateDepthResources();
-		void CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
-				VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
-		void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
-		void CopyBufferToImage(Buffer buffer, VkImage image, uint32_t width, uint32_t height);
 		VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 		void CreateUniformBuffers();
 		void CreateDescriptorPool();
 		void CreateDescriptorSets();
-		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 		void CreateCommandBuffers();
-		VkCommandBuffer BeginSingleTimeCommands();
-		void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
 		void CreateSyncObjects();
 		void SetupDebugMessenger();
 		void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);

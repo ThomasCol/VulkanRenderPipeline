@@ -3,6 +3,8 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+#include "CommandPool.h"
+
 class Buffer
 {
 public:
@@ -15,7 +17,7 @@ public:
 
 	void MapMemory(VkDevice device, VkDeviceSize offset, VkDeviceSize size, VkMemoryMapFlags flags, void* data);
 
-	void CopyBuffer(VkDevice device, VkQueue graphicQueue, VkCommandPool commandPool, Buffer& dstBuffer, VkDeviceSize size);
+	void CopyBuffer(VkDevice device, VkQueue graphicQueue, CommandPool commandPool, Buffer& dstBuffer, VkDeviceSize size);
 
 	void Destroy(VkDevice device);
 
