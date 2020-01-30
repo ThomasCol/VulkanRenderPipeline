@@ -20,40 +20,39 @@ void Texture::Load(const char* file)
 		throw std::runtime_error("failed to load texture image!");
 }
 
-void Texture::CreateTexture(VkDevice device, VkPhysicalDevice physicalDevice,
-		CommandPool commandPool, VkQueue graphicQueue)
+void Texture::CreateTexture(Context context)
 {
 	if (_pixels == nullptr)
 		return;
 
 	VkDeviceSize imageSize = _texWidth * _texHeight * 4;
 	Buffer stagingBuffer;
-	stagingBuffer.CreateBuffer(device, physicalDevice, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	stagingBuffer.CreateBuffer(context, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-	stagingBuffer.MapMemory(device, 0, imageSize, 0, _pixels);
+	stagingBuffer.MapMemory(context.device, 0, imageSize, 0, _pixels);
 
 	stbi_image_free(_pixels);
 
-	CreateImage(device, physicalDevice, _texWidth, _texHeight, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
+	CreateImage(context, _texWidth, _texHeight, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
 		VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 		_textureImage, _textureImageMemory);
 
-	TransitionImageLayout(device, commandPool, graphicQueue, _textureImage,
+	TransitionImageLayout(context, _textureImage,
 			VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-	CopyBufferToImage(device, commandPool, graphicQueue, stagingBuffer, _textureImage, static_cast<uint32_t>(_texWidth), static_cast<uint32_t>(_texHeight));
-	TransitionImageLayout(device, commandPool, graphicQueue, _textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+	CopyBufferToImage(context, stagingBuffer, _textureImage, static_cast<uint32_t>(_texWidth), static_cast<uint32_t>(_texHeight));
+	TransitionImageLayout(context, _textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-	stagingBuffer.Destroy(device);
+	stagingBuffer.Destroy(context.device);
 
-	CreateTextureImageView(device);
-	CreateTextureSampler(device);
+	CreateTextureImageView(context.device);
+	CreateTextureSampler(context.device);
 }
 
-void Texture::CopyBufferToImage(VkDevice device, CommandPool commandPool, VkQueue graphicQueue, Buffer buffer, VkImage image, uint32_t width, uint32_t height)
+void Texture::CopyBufferToImage(Context context, Buffer buffer, VkImage image, uint32_t width, uint32_t height)
 {
 	CommandBuffer commandBuffer;
-	commandBuffer.BeginOneTime(device, commandPool);
+	commandBuffer.BeginOneTime(context);
 
 	VkBufferImageCopy region{};
 	region.bufferOffset = 0;
@@ -81,7 +80,7 @@ void Texture::CopyBufferToImage(VkDevice device, CommandPool commandPool, VkQueu
 		&region
 	);
 
-	commandBuffer.EndOneTime(device, commandPool, graphicQueue);
+	commandBuffer.EndOneTime(context);
 }
 
 void Texture::CreateTextureImageView(VkDevice device)

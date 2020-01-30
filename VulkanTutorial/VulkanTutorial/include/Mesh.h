@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Context.h"
 #include "Vertex.h"
 #include "Texture.h"
 #include "CommandPool.h"
@@ -14,9 +15,9 @@ public:
 
 	Mesh& LoadMesh(const char* modelFile, const char* textureFile = "");
 
-	void CreateVertexBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkQueue graphicQueue, CommandPool commandPool);
-	void CreateBuffers(VkDevice device, VkPhysicalDevice physicalDevice, VkQueue graphicQueue, CommandPool commandPool);
-	void CreateIndexBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkQueue graphicQueue, CommandPool commandPool);
+	void CreateVertexBuffer(Context context);
+	void CreateBuffers(Context context);
+	void CreateIndexBuffer(Context context);
 
 	void Destroy(VkDevice device);
 

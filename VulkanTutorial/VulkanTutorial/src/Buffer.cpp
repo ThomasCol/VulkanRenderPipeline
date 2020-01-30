@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-Buffer& Buffer::CreateBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkDeviceSize size, VkBufferUsageFlags usage,
+Buffer& Buffer::CreateBuffer(Context context, VkDeviceSize size, VkBufferUsageFlags usage,
 		VkMemoryPropertyFlags properties)
 {
 	VkBufferCreateInfo bufferInfo = {};
@@ -11,21 +11,21 @@ Buffer& Buffer::CreateBuffer(VkDevice device, VkPhysicalDevice physicalDevice, V
 	bufferInfo.usage = usage;
 	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-	if (vkCreateBuffer(device, &bufferInfo, nullptr, &_buffer) != VK_SUCCESS)
+	if (vkCreateBuffer(context.device, &bufferInfo, nullptr, &_buffer) != VK_SUCCESS)
 		throw std::runtime_error("failed to create buffer!");
 
 	VkMemoryRequirements memRequirements;
-	vkGetBufferMemoryRequirements(device, _buffer, &memRequirements);
+	vkGetBufferMemoryRequirements(context.device, _buffer, &memRequirements);
 
 	VkMemoryAllocateInfo allocInfo = {};
 	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	allocInfo.allocationSize = memRequirements.size;
-	allocInfo.memoryTypeIndex = FindMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);
+	allocInfo.memoryTypeIndex = FindMemoryType(context.physicalDevice, memRequirements.memoryTypeBits, properties);
 
-	if (vkAllocateMemory(device, &allocInfo, nullptr, &_bufferMemory) != VK_SUCCESS)
+	if (vkAllocateMemory(context.device, &allocInfo, nullptr, &_bufferMemory) != VK_SUCCESS)
 		throw std::runtime_error("failed to allocate buffer memory!");
 
-	vkBindBufferMemory(device, _buffer, _bufferMemory, 0);
+	vkBindBufferMemory(context.device, _buffer, _bufferMemory, 0);
 }
 
 uint32_t Buffer::FindMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
@@ -50,16 +50,16 @@ void Buffer::MapMemory(VkDevice device, VkDeviceSize offset, VkDeviceSize size, 
 	vkUnmapMemory(device, _bufferMemory);
 }
 
-void Buffer::CopyBuffer(VkDevice device, VkQueue graphicQueue, CommandPool commandPool, Buffer& dstBuffer, VkDeviceSize size)
+void Buffer::CopyBuffer(Context context, Buffer& dstBuffer, VkDeviceSize size)
 {
 	CommandBuffer commandBuffer;
-	commandBuffer.BeginOneTime(device, commandPool);
+	commandBuffer.BeginOneTime(context);
 
 	VkBufferCopy copyRegion = {};
 	copyRegion.size = size;
 	vkCmdCopyBuffer(commandBuffer.Get(), _buffer, dstBuffer._buffer, 1, &copyRegion);
 
-	commandBuffer.EndOneTime(device, commandPool, graphicQueue);
+	commandBuffer.EndOneTime(context);
 }
 
 void Buffer::Destroy(VkDevice device)

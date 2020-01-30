@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Context.h"
 #include "Shader.h"
 #include "InputManager.h"
 #include "CommandPool.h"
@@ -32,18 +33,12 @@ namespace Application
 	class Renderer
 	{
 	private:
+		Context							_context;
 		InputManager					_inputManager;
 		Mesh							_mesh;
 		float							_lastFrame;
 		float							_currentFrameTime;
 		GLFWwindow*						_window;
-		VkInstance						_instance;
-		VkDebugUtilsMessengerEXT		_debugMessenger;
-		VkPhysicalDevice				_physicalDevice { VK_NULL_HANDLE };
-		VkDevice 						_device;
-		VkSurfaceKHR 					_surface;
-		VkQueue 						_graphicsQueue;
-		VkQueue 						_presentQueue;
 		VkSwapchainKHR					_swapChain;
 		std::vector<VkImage>			_swapChainImages;
 		VkFormat						_swapChainImageFormat;
@@ -53,7 +48,6 @@ namespace Application
 		VkDescriptorSetLayout			_descriptorSetLayout;
 		VkPipelineLayout				_pipelineLayout;
 		VkPipeline						_graphicsPipeline;
-		CommandPool						_commandPool;
 		std::vector<VkCommandBuffer>	_commandBuffers;
 		std::vector<VkSemaphore>		_imageAvailableSemaphores;
 		std::vector<VkSemaphore>		_renderFinishedSemaphores;
@@ -69,25 +63,6 @@ namespace Application
 		VkImageView						_depthImageView;
 		std::vector<Shader>				_shaders;
 
-		const std::vector<const char*> _validationLayers {
-			"VK_LAYER_KHRONOS_validation",
-		};
-
-		const std::vector<const char*> _deviceExtensions {
-    		VK_KHR_SWAPCHAIN_EXTENSION_NAME
-		};
-
-		struct QueueFamilyIndices
-		{
-    		std::optional<uint32_t> graphicsFamily;
-			std::optional<uint32_t> presentFamily;
-
-    		bool isComplete()
-			{
-        		return graphicsFamily.has_value();
-   			}
-		};
-
 		struct SwapChainSupportDetails
 		{
     		VkSurfaceCapabilitiesKHR capabilities;
@@ -95,24 +70,14 @@ namespace Application
     		std::vector<VkPresentModeKHR> presentModes;
 		};
 
-#ifdef NDEBUG
-		const bool enableValidationLayers = false;
-#else
-		const bool enableValidationLayers = true;
-#endif
-
 		void InitWindow();
 		void InitVulkan();
-		void CreateInstance();
-		void CreateLogicalDevice();
-		void CreateSurface();
 		void CreateSwapChain();
 		void CreateImageViews();
 		void CreateRenderPass();
 		void CreateDescriptorSetLayout();
 		void CreateGraphicsPipeline();
 		void CreateFramebuffers();
-		void CreateCommandPool();
 		VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 		VkFormat FindDepthFormat();
 		void CreateDepthResources();
@@ -122,16 +87,6 @@ namespace Application
 		void CreateDescriptorSets();
 		void CreateCommandBuffers();
 		void CreateSyncObjects();
-		void SetupDebugMessenger();
-		void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
-		void CheckExtension();
-		std::vector<const char*> GetRequiredEtensions();
-		bool CheckValidationLayerSupport();
-		void PickPhysicalDevice();
-		bool IsDeviceSuitable(VkPhysicalDevice device);
-		bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
-		int  RateDeviceSuitability(VkPhysicalDevice device);
-		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
 		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 		VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
@@ -144,16 +99,6 @@ namespace Application
 		void RecreateSwapChain();
 		void RecreateGraphicPipeline();
 
-
-		VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
-			const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
-			const VkAllocationCallbacks* pAllocator,
-			VkDebugUtilsMessengerEXT* pDebugMessenger);
-
-		void DestroyDebugUtilsMessengerEXT(VkInstance instance,
-			VkDebugUtilsMessengerEXT debugMessenger,
-			const VkAllocationCallbacks* pAllocator);
-
 	public:
 		Renderer() = default;
 		Renderer(const Renderer& app) = default;
@@ -161,11 +106,6 @@ namespace Application
 		~Renderer() = default;
 
 		void Run();
-
-		static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-			VkDebugUtilsMessageTypeFlagsEXT messageType,
-			const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-			void* pUserData);
 
 		bool	framebufferResized = false;
 		bool	shaderChanged = false;

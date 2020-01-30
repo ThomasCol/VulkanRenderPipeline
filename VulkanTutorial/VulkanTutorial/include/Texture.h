@@ -9,8 +9,8 @@ public:
 	~Texture() = default;
 
 	void Load(const char* file);
-	void CreateTexture(VkDevice device, VkPhysicalDevice physicalDevice, CommandPool commandPool, VkQueue graphicQueue);
-	void CopyBufferToImage(VkDevice device, CommandPool commandPool, VkQueue graphicQueue, Buffer buffer, VkImage image, uint32_t width, uint32_t height);
+	void CreateTexture(Context context);
+	void CopyBufferToImage(Context context, Buffer buffer, VkImage image, uint32_t width, uint32_t height);
 	void CreateTextureImageView(VkDevice device);
 	void CreateTextureSampler(VkDevice device);
 

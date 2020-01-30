@@ -1,15 +1,15 @@
 #include "CommandBuffer.h"
 
-#include "CommandPool.h"
+#include "Context.h"
 
-CommandBuffer& CommandBuffer::BeginOneTime(VkDevice device, CommandPool commandPool)
+CommandBuffer& CommandBuffer::BeginOneTime(Context context)
 {
 	VkCommandBufferAllocateInfo allocInfo = {};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	allocInfo.commandBufferCount = 1;
 
-	commandPool.AllocateCommandBuffer(device, &allocInfo, &_buffer);
+	context.commandPool.AllocateCommandBuffer(context.device, &allocInfo, &_buffer);
 
 	VkCommandBufferBeginInfo beginInfo = {};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -20,7 +20,7 @@ CommandBuffer& CommandBuffer::BeginOneTime(VkDevice device, CommandPool commandP
 	return *this;
 }
 
-void CommandBuffer::EndOneTime(VkDevice device, CommandPool commandPool, VkQueue graphicsQueue)
+void CommandBuffer::EndOneTime(Context context)
 {
 	vkEndCommandBuffer(_buffer);
 
@@ -29,8 +29,8 @@ void CommandBuffer::EndOneTime(VkDevice device, CommandPool commandPool, VkQueue
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &_buffer;
 
-	vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-	vkQueueWaitIdle(graphicsQueue);
+	vkQueueSubmit(context.graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+	vkQueueWaitIdle(context.graphicsQueue);
 
-	commandPool.FreeCommandBuffer(device, 1, &_buffer);
+	context.commandPool.FreeCommandBuffer(context.device, 1, &_buffer);
 }

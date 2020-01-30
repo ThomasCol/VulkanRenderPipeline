@@ -58,43 +58,43 @@ Mesh& Mesh::LoadMesh(const char* modelFile, const char* textureFile)
 	_texture.Load(textureFile);
 }
 
-void Mesh::CreateBuffers(VkDevice device, VkPhysicalDevice physicalDevice, VkQueue graphicQueue, CommandPool commandPool)
+void Mesh::CreateBuffers(Context context)
 {
-	CreateVertexBuffer(device, physicalDevice, graphicQueue, commandPool);
-	CreateIndexBuffer(device, physicalDevice, graphicQueue, commandPool);
-	_texture.CreateTexture(device, physicalDevice, commandPool, graphicQueue);
+	CreateVertexBuffer(context);
+	CreateIndexBuffer(context);
+	_texture.CreateTexture(context);
 }
 
-void Mesh::CreateVertexBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkQueue graphicQueue, CommandPool commandPool)
+void Mesh::CreateVertexBuffer(Context context)
 {
 	VkDeviceSize bufferSize = sizeof(_vertices[0]) * _vertices.size();
 
 	Buffer stagingBuffer;
-	stagingBuffer.CreateBuffer(device, physicalDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	stagingBuffer.CreateBuffer(context, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-	stagingBuffer.MapMemory(device, 0, bufferSize, 0, _vertices.data());
+	stagingBuffer.MapMemory(context.device, 0, bufferSize, 0, _vertices.data());
 
-	_vertexBuffer.CreateBuffer(device, physicalDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	_vertexBuffer.CreateBuffer(context, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-	stagingBuffer.CopyBuffer(device, graphicQueue, commandPool, _vertexBuffer, bufferSize);
+	stagingBuffer.CopyBuffer(context, _vertexBuffer, bufferSize);
 
-	stagingBuffer.Destroy(device);
+	stagingBuffer.Destroy(context.device);
 }
 
-void Mesh::CreateIndexBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkQueue graphicQueue, CommandPool commandPool)
+void Mesh::CreateIndexBuffer(Context context)
 {
 	VkDeviceSize bufferSize = sizeof(_indices[0]) * _indices.size();
 
 	Buffer stagingBuffer;
-	stagingBuffer.CreateBuffer(device, physicalDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	stagingBuffer.CreateBuffer(context, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-	stagingBuffer.MapMemory(device, 0, bufferSize, 0, _indices.data());
+	stagingBuffer.MapMemory(context.device, 0, bufferSize, 0, _indices.data());
 
-	_indexBuffer.CreateBuffer(device, physicalDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	_indexBuffer.CreateBuffer(context, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-	stagingBuffer.CopyBuffer(device, graphicQueue, commandPool, _indexBuffer, bufferSize);
+	stagingBuffer.CopyBuffer(context, _indexBuffer, bufferSize);
 
-	stagingBuffer.Destroy(device);
+	stagingBuffer.Destroy(context.device);
 }
 
 void Mesh::Destroy(VkDevice device)

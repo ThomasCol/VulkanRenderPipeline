@@ -5,6 +5,7 @@
 #include <vector>
 
 class CommandPool;
+class Context;
 
 class CommandBuffer
 {
@@ -12,8 +13,8 @@ public:
 	CommandBuffer() = default;
 	~CommandBuffer() = default;
 
-	CommandBuffer& BeginOneTime(VkDevice device, CommandPool commandPool);
-	void EndOneTime(VkDevice device, CommandPool commandPool, VkQueue graphicsQueue);
+	CommandBuffer& BeginOneTime(Context context);
+	void EndOneTime(Context context);
 
 	VkCommandBuffer& Get() { return _buffer; }
 

@@ -15,7 +15,7 @@ uint32_t FindMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, Vk
 	throw std::runtime_error("failed to find suitable memory type!");
 }
 
-void CreateImage(VkDevice device, VkPhysicalDevice physicalDevice, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
+void CreateImage(Context context, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
 	VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
 {
 	VkImageCreateInfo imageInfo = {};
@@ -33,21 +33,21 @@ void CreateImage(VkDevice device, VkPhysicalDevice physicalDevice, uint32_t widt
 	imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-	if (vkCreateImage(device, &imageInfo, nullptr, &image) != VK_SUCCESS)
+	if (vkCreateImage(context.device, &imageInfo, nullptr, &image) != VK_SUCCESS)
 		throw std::runtime_error("failed to create image!");
 
 	VkMemoryRequirements memRequirements;
-	vkGetImageMemoryRequirements(device, image, &memRequirements);
+	vkGetImageMemoryRequirements(context.device, image, &memRequirements);
 
 	VkMemoryAllocateInfo allocInfo = {};
 	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	allocInfo.allocationSize = memRequirements.size;
-	allocInfo.memoryTypeIndex = FindMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);
+	allocInfo.memoryTypeIndex = FindMemoryType(context.physicalDevice, memRequirements.memoryTypeBits, properties);
 
-	if (vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS)
+	if (vkAllocateMemory(context.device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS)
 		throw std::runtime_error("failed to allocate image memory!");
 
-	vkBindImageMemory(device, image, imageMemory, 0);
+	vkBindImageMemory(context.device, image, imageMemory, 0);
 }
 
 VkImageView CreateImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
@@ -75,11 +75,11 @@ bool HasStencilComponent(VkFormat format)
 	return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
 
-void TransitionImageLayout(VkDevice device, CommandPool commandPool, VkQueue graphicQueue, VkImage image,
+void TransitionImageLayout(Context context, VkImage image,
 	VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
 {
 	CommandBuffer commandBuffer;
-	commandBuffer.BeginOneTime(device, commandPool);
+	commandBuffer.BeginOneTime(context);
 
 	VkImageMemoryBarrier barrier = {};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -144,5 +144,5 @@ void TransitionImageLayout(VkDevice device, CommandPool commandPool, VkQueue gra
 		1, &barrier
 	);
 
-	commandBuffer.EndOneTime(device, commandPool, graphicQueue);
+	commandBuffer.EndOneTime(context);
 }
