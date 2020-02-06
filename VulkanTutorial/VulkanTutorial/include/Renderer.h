@@ -36,6 +36,7 @@ namespace Application
 		Context							_context;
 		InputManager					_inputManager;
 		Mesh							_mesh;
+		Mesh							_mesh2;
 		float							_lastFrame;
 		float							_currentFrameTime;
 		GLFWwindow*						_window;
