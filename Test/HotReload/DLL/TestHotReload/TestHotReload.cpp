@@ -35,7 +35,7 @@ IDLL* ReloadAPI(HMODULE* DllHandleOut)
 	GetCurrentDirectoryA(MAX_PATH, path);
 	std::string str("\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Common7\\IDE\\devenv.com\" ");
 	str += path;
-	str += "\\..\\DLL\\DLL.vcxproj /Build Debug";
+	str += "\\..\\DLL\\DLL.vcxproj /Build Release";
 	std::cout << str << std::endl;
 	system(str.c_str());
 

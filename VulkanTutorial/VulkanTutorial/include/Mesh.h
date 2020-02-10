@@ -5,7 +5,7 @@
 #include "Texture.h"
 #include "CommandPool.h"
 
-#define MODEL_PATH "Media/chalet.obj"
+#define MODEL_PATH "Media/cube.obj"
 
 class Mesh
 {
@@ -28,6 +28,8 @@ public:
 	inline const uint32_t& GetIndexSize() { return static_cast<uint32_t>(_indices.size()); }
 	inline VkImageView& GetTextureView() { return _texture.GetView(); }
 	inline VkSampler& GetTextureSampler() { return _texture.GetSampler(); }
+	inline std::vector<VkDescriptorSet>& GetDescriptorBuffer() { return _descriptorSets; }
+	inline std::vector<Buffer>& GetUniformBuffer() { return _uniformBuffers; }
 
 private:
 	std::vector<Vertex>				_vertices;
@@ -35,9 +37,11 @@ private:
 	Buffer							_vertexBuffer;
 	Buffer							_indexBuffer;
 	Texture							_texture;
+	std::vector<VkDescriptorSet>	_descriptorSets;
+	std::vector<Buffer>				_uniformBuffers;
 
-	VkPipelineVertexInputStateCreateInfo	_info;
-	VkVertexInputBindingDescription			_bindingDescriptor;
+	VkPipelineVertexInputStateCreateInfo				_info;
+	VkVertexInputBindingDescription						_bindingDescriptor;
 	std::array<VkVertexInputAttributeDescription, 3>	_attributeDescriptions;
 
 };

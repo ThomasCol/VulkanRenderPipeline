@@ -43,7 +43,8 @@ namespace Application
 		CreateGraphicsPipeline();
 		CreateDepthResources();
 		CreateFramebuffers();
-		_mesh.CreateBuffers(_context);
+		for (int i = 0; i < _meshes.size(); ++i)
+			_meshes[i]->CreateBuffers(_context);
 		CreateUniformBuffers();
 		CreateDescriptorPool();
 		CreateDescriptorSets();
@@ -216,9 +217,19 @@ namespace Application
 		_shaders.push_back(fragmentShader);
 
 		VkPipelineShaderStageCreateInfo shaderStages[] = { vertexShader.GetInfo(), fragmentShader.GetInfo() };
-
-		_mesh.LoadMesh(MODEL_PATH, TEXTURE_PATH);
-		VkPipelineVertexInputStateCreateInfo vertexInfo = _mesh.GetInfo();
+		
+		std::vector<VkPipelineVertexInputStateCreateInfo> vertexInfo;
+		Mesh* mesh = new Mesh;
+		mesh->LoadMesh("Media/chalet.obj", TEXTURE_PATH);
+		_meshes.push_back(mesh);
+		vertexInfo.push_back(mesh->GetInfo());
+		for (int i = 0; i < 6; ++i)
+		{
+			mesh = new Mesh;
+			mesh->LoadMesh(MODEL_PATH, TEXTURE_PATH);
+			_meshes.push_back(mesh);
+			vertexInfo.push_back(mesh->GetInfo());
+		}
 
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
 		inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -324,7 +335,7 @@ namespace Application
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 		pipelineInfo.stageCount = 2;
 		pipelineInfo.pStages = shaderStages;
-		pipelineInfo.pVertexInputState = &_mesh.GetInfo();
+		pipelineInfo.pVertexInputState = vertexInfo.data();
 		pipelineInfo.pInputAssemblyState = &inputAssembly;
 		pipelineInfo.pViewportState = &viewportState;
 		pipelineInfo.pRasterizationState = &rasterizer;
@@ -428,25 +439,28 @@ namespace Application
 	{
 		VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 
-		_uniformBuffers.resize(_swapChainImages.size());
+		for (int j = 0; j < _meshes.size(); ++j)
+		{
+			_meshes[j]->GetUniformBuffer().resize(_swapChainImages.size());
 
-		for (size_t i = 0; i < _swapChainImages.size(); i++)
-			_uniformBuffers[i].CreateBuffer(_context, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+			for (size_t i = 0; i < _swapChainImages.size(); i++)
+				_meshes[j]->GetUniformBuffer()[i].CreateBuffer(_context, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		}
 	}
 
 	void Renderer::CreateDescriptorPool()
 	{
 		std::array<VkDescriptorPoolSize, 2> poolSizes = {};
 		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		poolSizes[0].descriptorCount = static_cast<uint32_t>(_swapChainImages.size());
+		poolSizes[0].descriptorCount = static_cast<uint32_t>(_swapChainImages.size()) * _meshes.size();
 		poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		poolSizes[1].descriptorCount = static_cast<uint32_t>(_swapChainImages.size());
+		poolSizes[1].descriptorCount = static_cast<uint32_t>(_swapChainImages.size()) * _meshes.size();
 
 		VkDescriptorPoolCreateInfo poolInfo = {};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 		poolInfo.pPoolSizes = poolSizes.data();
-		poolInfo.maxSets = static_cast<uint32_t>(_swapChainImages.size());
+		poolInfo.maxSets = static_cast<uint32_t>(_swapChainImages.size()) * _meshes.size();
 
 		if (vkCreateDescriptorPool(_context.device, &poolInfo, nullptr, &_descriptorPool) != VK_SUCCESS)
 			throw std::runtime_error("failed to create descriptor pool!");
@@ -454,48 +468,52 @@ namespace Application
 
 	void Renderer::CreateDescriptorSets()
 	{
-		std::vector<VkDescriptorSetLayout> layouts(_swapChainImages.size(), _descriptorSetLayout);
+		std::vector<VkDescriptorSetLayout> layouts(_swapChainImages.size() , _descriptorSetLayout);
 		VkDescriptorSetAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfo.descriptorPool = _descriptorPool;
 		allocInfo.descriptorSetCount = static_cast<uint32_t>(_swapChainImages.size());
 		allocInfo.pSetLayouts = layouts.data();
 
-		_descriptorSets.resize(_swapChainImages.size());
-		if (vkAllocateDescriptorSets(_context.device, &allocInfo, _descriptorSets.data()) != VK_SUCCESS)
-			throw std::runtime_error("failed to allocate descriptor sets!");
-
-		for (size_t i = 0; i < _swapChainImages.size(); i++)
+		for (int j = 0; j < _meshes.size(); ++j)
 		{
-			VkDescriptorBufferInfo bufferInfo{};
-			bufferInfo.buffer = _uniformBuffers[i].GetBuffer();
-			bufferInfo.offset = 0;
-			bufferInfo.range = sizeof(UniformBufferObject);
+			std::vector<VkDescriptorSet>& descriptorSets = _meshes[j]->GetDescriptorBuffer();
+			descriptorSets.resize(_swapChainImages.size());
+			if (vkAllocateDescriptorSets(_context.device, &allocInfo, descriptorSets.data()) != VK_SUCCESS)
+				throw std::runtime_error("failed to allocate descriptor sets!");
 
-			VkDescriptorImageInfo imageInfo = {};
-			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			imageInfo.imageView = _mesh.GetTextureView();
-			imageInfo.sampler = _mesh.GetTextureSampler();
+			for (size_t i = 0; i < _swapChainImages.size(); i++)
+			{
+				VkDescriptorBufferInfo bufferInfo = {};
+				bufferInfo.buffer = _meshes[j]->GetUniformBuffer()[i].GetBuffer();
+				bufferInfo.offset = 0;
+				bufferInfo.range = sizeof(UniformBufferObject);
 
-			std::array<VkWriteDescriptorSet, 2> descriptorWrites = {};
+				VkDescriptorImageInfo imageInfo = {};
+				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				imageInfo.imageView = _meshes[j]->GetTextureView();
+				imageInfo.sampler = _meshes[j]->GetTextureSampler();
 
-			descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrites[0].dstSet = _descriptorSets[i];
-			descriptorWrites[0].dstBinding = 0;
-			descriptorWrites[0].dstArrayElement = 0;
-			descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			descriptorWrites[0].descriptorCount = 1;
-			descriptorWrites[0].pBufferInfo = &bufferInfo;
+				std::array<VkWriteDescriptorSet, 2> descriptorWrites = {};
 
-			descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorWrites[1].dstSet = _descriptorSets[i];
-			descriptorWrites[1].dstBinding = 1;
-			descriptorWrites[1].dstArrayElement = 0;
-			descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			descriptorWrites[1].descriptorCount = 1;
-			descriptorWrites[1].pImageInfo = &imageInfo;
+				descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorWrites[0].dstSet = descriptorSets[i];
+				descriptorWrites[0].dstBinding = 0;
+				descriptorWrites[0].dstArrayElement = 0;
+				descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				descriptorWrites[0].descriptorCount = 1;
+				descriptorWrites[0].pBufferInfo = &bufferInfo;
 
-			vkUpdateDescriptorSets(_context.device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+				descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorWrites[1].dstSet = descriptorSets[i];
+				descriptorWrites[1].dstBinding = 1;
+				descriptorWrites[1].dstArrayElement = 0;
+				descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				descriptorWrites[1].descriptorCount = 1;
+				descriptorWrites[1].pImageInfo = &imageInfo;
+
+				vkUpdateDescriptorSets(_context.device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+			}
 		}
 	}
 
@@ -540,15 +558,18 @@ namespace Application
 
 			vkCmdBindPipeline(_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, _graphicsPipeline);
 
-			VkBuffer vertexBuffers[] = { _mesh.GetVertexBuffer() };
-			VkDeviceSize offsets[] = { 0 };
-			vkCmdBindVertexBuffers(_commandBuffers[i], 0, 1, vertexBuffers, offsets);
+			for (int j = 0; j < _meshes.size(); ++j)
+			{
+				VkBuffer vertexBuffers[] = { _meshes[j]->GetVertexBuffer() };
+				VkDeviceSize offsets[] = { 0 };
+				vkCmdBindVertexBuffers(_commandBuffers[i], 0, 1, vertexBuffers, offsets);
 
-			vkCmdBindIndexBuffer(_commandBuffers[i], _mesh.GetIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
+				vkCmdBindIndexBuffer(_commandBuffers[i], _meshes[j]->GetIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
-			vkCmdBindDescriptorSets(_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, _pipelineLayout, 0, 1, &_descriptorSets[i], 0, nullptr);
+				vkCmdBindDescriptorSets(_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, _pipelineLayout, 0, 1, &(_meshes[j]->GetDescriptorBuffer()[i]), 0, nullptr);
 
-			vkCmdDrawIndexed(_commandBuffers[i], _mesh.GetIndexSize(), 1, 0, 0, 0);
+				vkCmdDrawIndexed(_commandBuffers[i], _meshes[j]->GetIndexSize(), 1, 0, 0, 0);
+			}
 
 			vkCmdEndRenderPass(_commandBuffers[i]);
 
@@ -745,12 +766,26 @@ namespace Application
 
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
 		UniformBufferObject ubo = {};
-		ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		ubo.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f)) * glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		ubo.model *= glm::rotate(glm::mat4(1.0f), time * glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		ubo.view = cam.GetInverseMatrix();
-		ubo.proj = glm::perspective(glm::radians(45.0f), _swapChainExtent.width / (float)_swapChainExtent.height, 0.1f, 10.0f);
+		ubo.proj = glm::perspective(glm::radians(45.0f), _swapChainExtent.width / (float)_swapChainExtent.height, 0.1f, 100.0f);
 		ubo.proj[1][1] *= -1;
-		_uniformBuffers[currentImage].MapMemory(_context.device, 0, sizeof(ubo), 0, &ubo);
+
+		_meshes[0]->GetUniformBuffer()[currentImage].MapMemory(_context.device, 0, sizeof(ubo), 0, &ubo);
+
+		for (int i = 1; i < _meshes.size(); ++i)
+		{
+			UniformBufferObject uboCube = {};
+			uboCube.model = ubo.model * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f + i * 3, 0.0f)) * glm::rotate(glm::mat4(1.0f), time * glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+			uboCube.view = cam.GetInverseMatrix();
+			uboCube.proj = glm::perspective(glm::radians(45.0f), _swapChainExtent.width / (float)_swapChainExtent.height, 0.1f, 100.0f);
+			uboCube.proj[1][1] *= -1;
+
+			_meshes[i]->GetUniformBuffer()[currentImage].MapMemory(_context.device, 0, sizeof(uboCube), 0, &uboCube);
+		}
 	}
 
 	void Renderer::Cleanup()
@@ -760,7 +795,11 @@ namespace Application
 		for (size_t i = 0; i < _shaders.size(); ++i)
 			_shaders[i].Destroy(_context.device);
 
-		_mesh.Destroy(_context.device);
+		for (int i = 0; i < _meshes.size(); ++i)
+		{
+			_meshes[i]->Destroy(_context.device);
+			delete _meshes[i];
+		}
 
 		vkDestroyDescriptorSetLayout(_context.device, _descriptorSetLayout, nullptr);
 
@@ -802,8 +841,15 @@ namespace Application
 
 		vkDestroySwapchainKHR(_context.device, _swapChain, nullptr);
 
-		for (size_t i = 0; i < _swapChainImages.size(); i++)
-			_uniformBuffers[i].Destroy(_context.device);
+		for (size_t i = 0; i < _meshes.size(); ++i)
+		{
+			for (size_t j = 0; j < _swapChainImages.size(); ++j)
+			{
+				_meshes[i]->GetUniformBuffer()[j].Destroy(_context.device);
+			}
+
+
+		}
 
 		vkDestroyDescriptorPool(_context.device, _descriptorPool, nullptr);
 	}

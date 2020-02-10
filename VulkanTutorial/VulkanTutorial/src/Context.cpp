@@ -14,6 +14,8 @@ Context& Context::Create(GLFWwindow* window)
 	PickPhysicalDevice();
 	CreateLogicalDevice();
 	CreateCommandPool();
+
+	return *this;
 }
 
 void Context::CreateInstance()

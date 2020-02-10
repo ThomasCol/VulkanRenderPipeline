@@ -14,7 +14,7 @@ Mesh& Mesh::LoadMesh(const char* modelFile, const char* textureFile)
 
 	std::unordered_map<Vertex, uint32_t> uniqueVertices = {};
 
-	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, MODEL_PATH))
+	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, modelFile))
 		throw std::runtime_error(warn + err);
 
 	for (const auto& shape : shapes)

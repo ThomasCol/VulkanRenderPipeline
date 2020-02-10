@@ -35,7 +35,15 @@ namespace Application
 		state = glfwGetKey(window, GLFW_KEY_ESCAPE);
 		if (state == GLFW_PRESS)
 		{
-			renderer->run = false;
+			if (renderer->mouseCaptured)
+			{
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				renderer->mouseCaptured = false;
+			}
+			else
+			{
+				glfwSetWindowShouldClose(window, GLFW_TRUE);
+			}
 		}
 
 		double mouseX, mouseY;

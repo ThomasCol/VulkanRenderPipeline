@@ -35,8 +35,7 @@ namespace Application
 	private:
 		Context							_context;
 		InputManager					_inputManager;
-		Mesh							_mesh;
-		Mesh							_mesh2;
+		std::vector<Mesh*>				_meshes;
 		float							_lastFrame;
 		float							_currentFrameTime;
 		GLFWwindow*						_window;
@@ -56,9 +55,7 @@ namespace Application
 		std::vector<VkFence>			_imagesInFlight;
 		size_t							_currentFrame = 0;
 		std::vector<VkFramebuffer>		_swapChainFramebuffers;
-		std::vector<Buffer>				_uniformBuffers;
 		VkDescriptorPool				_descriptorPool;
-		std::vector<VkDescriptorSet>	_descriptorSets;
 		VkImage							_depthImage;
 		VkDeviceMemory					_depthImageMemory;
 		VkImageView						_depthImageView;
@@ -110,10 +107,12 @@ namespace Application
 
 		bool	framebufferResized = false;
 		bool	shaderChanged = false;
+		bool	mouseCaptured = false;
 
 		Camera	cam;
 
 		float	deltaTime;
 		bool run = true;
+
 	};
 }
