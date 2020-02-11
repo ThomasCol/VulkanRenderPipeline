@@ -1,0 +1,12 @@
+LPP_Validate_License README
+---------------------------
+
+Synopsis:
+  Checks if a valid Live++ license is installed on this machine
+
+Command-line arguments:
+  None
+
+Exit codes:
+  0 - success
+  Any other - failure

@@ -1,0 +1,12 @@
+LPP_Deactivate_License README
+-----------------------------
+
+Synopsis:
+  Deactivates an existing Live++ license
+
+Command-line arguments:
+  None
+
+Exit codes:
+  0 - success
+  Any other - failure

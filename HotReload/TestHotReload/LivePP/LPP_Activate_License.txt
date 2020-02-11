@@ -1,0 +1,13 @@
+LPP_Activate_License README
+---------------------------
+
+Synopsis:
+  Activates a Live++ license
+
+Command-line arguments:
+  <activation code> <user name limited to 9 characters>
+  Example: LPP_Activate_License.exe ABCD-ABCD-ABCD test_user
+
+Exit codes:
+  0 - success
+  Any other - failure
