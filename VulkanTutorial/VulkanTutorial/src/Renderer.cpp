@@ -43,8 +43,6 @@ namespace Application
 		CreateGraphicsPipeline();
 		CreateDepthResources();
 		CreateFramebuffers();
-		for (int i = 0; i < _meshes.size(); ++i)
-			_meshes[i]->CreateBuffers(_context);
 		CreateUniformBuffers();
 		CreateDescriptorPool();
 		CreateDescriptorSets();
@@ -220,16 +218,12 @@ namespace Application
 		
 		std::vector<VkPipelineVertexInputStateCreateInfo> vertexInfo;
 		Mesh* mesh = new Mesh;
-		mesh->LoadMesh("Media/chalet.obj", TEXTURE_PATH);
+		mesh->LoadMesh("Media/fantasy_game_inn.obj", "Media/fantasy_game_inn_diffuse.png");
 		_meshes.push_back(mesh);
 		vertexInfo.push_back(mesh->GetInfo());
-		for (int i = 0; i < 6; ++i)
-		{
-			mesh = new Mesh;
-			mesh->LoadMesh(MODEL_PATH, TEXTURE_PATH);
-			_meshes.push_back(mesh);
-			vertexInfo.push_back(mesh->GetInfo());
-		}
+
+		for (int i = 0; i < _meshes.size(); ++i)
+			_meshes[i]->CreateBuffers(_context);
 
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
 		inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -768,24 +762,12 @@ namespace Application
 		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
 		UniformBufferObject ubo = {};
-		ubo.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f)) * glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		ubo.model *= glm::rotate(glm::mat4(1.0f), time * glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		ubo.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
 		ubo.view = cam.GetInverseMatrix();
 		ubo.proj = glm::perspective(glm::radians(45.0f), _swapChainExtent.width / (float)_swapChainExtent.height, 0.1f, 100.0f);
 		ubo.proj[1][1] *= -1;
 
 		_meshes[0]->GetUniformBuffer()[currentImage].MapMemory(_context.device, 0, sizeof(ubo), 0, &ubo);
-
-		for (int i = 1; i < _meshes.size(); ++i)
-		{
-			UniformBufferObject uboCube = {};
-			uboCube.model = ubo.model * glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f + i * 3, 0.0f)) * glm::rotate(glm::mat4(1.0f), time * glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-			uboCube.view = cam.GetInverseMatrix();
-			uboCube.proj = glm::perspective(glm::radians(45.0f), _swapChainExtent.width / (float)_swapChainExtent.height, 0.1f, 100.0f);
-			uboCube.proj[1][1] *= -1;
-
-			_meshes[i]->GetUniformBuffer()[currentImage].MapMemory(_context.device, 0, sizeof(uboCube), 0, &uboCube);
-		}
 	}
 
 	void Renderer::Cleanup()
@@ -847,8 +829,6 @@ namespace Application
 			{
 				_meshes[i]->GetUniformBuffer()[j].Destroy(_context.device);
 			}
-
-
 		}
 
 		vkDestroyDescriptorPool(_context.device, _descriptorPool, nullptr);
@@ -887,8 +867,24 @@ namespace Application
 		vkDestroyPipeline(_context.device, _graphicsPipeline, nullptr);
 		vkDestroyPipelineLayout(_context.device, _pipelineLayout, nullptr);
 		_context.commandPool.FreeCommandBuffer(_context.device, static_cast<uint32_t>(_commandBuffers.size()), _commandBuffers.data());
+
+		for (int i = 0; i < _meshes.size(); ++i)
+		{
+			for (size_t j = 0; j < _swapChainImages.size(); ++j)
+			{
+				_meshes[i]->GetUniformBuffer()[j].Destroy(_context.device);
+			}
+			_meshes[i]->Destroy(_context.device);
+			delete _meshes[i];
+		}
+		_meshes.resize(0);
+
+		vkDestroyDescriptorPool(_context.device, _descriptorPool, nullptr);
 		
 		CreateGraphicsPipeline();
+		CreateUniformBuffers();
+		CreateDescriptorPool();
+		CreateDescriptorSets();
 		CreateCommandBuffers();
 
 		shaderChanged = false;

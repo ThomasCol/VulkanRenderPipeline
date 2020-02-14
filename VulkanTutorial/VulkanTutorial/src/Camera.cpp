@@ -12,25 +12,25 @@ namespace Application
 {
 	void Camera::MoveForward(float deltaTime)
 	{
-		float cameraSpeed = 2.5 * deltaTime;
+		float cameraSpeed = 5 * deltaTime;
 		position += cameraSpeed * front;
 	}
 
 	void Camera::MoveBackward(float deltaTime)
 	{
-		float cameraSpeed = 2.5 * deltaTime;
+		float cameraSpeed = 5 * deltaTime;
 		position -= cameraSpeed * front;
 	}
 
 	void Camera::MoveLeft(float deltaTime)
 	{
-		float cameraSpeed = 2.5 * deltaTime;
+		float cameraSpeed = 5 * deltaTime;
 		position -= glm::normalize(glm::cross(front, up)) * cameraSpeed;
 	}
 
 	void Camera::MoveRight(float deltaTime)
 	{
-		float cameraSpeed = 2.5 * deltaTime;
+		float cameraSpeed = 5 * deltaTime;
 		position += glm::normalize(glm::cross(front, up)) * cameraSpeed;
 	}
 

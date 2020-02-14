@@ -17,7 +17,7 @@ int main()
 	lpp::lppRegisterProcessGroup(livePP, "AGroupName");
 	lpp::lppEnableAllModulesSync(livePP, L"DLL.dll");
 
-	IDLL* dll;
+	IDLL* dll = nullptr;
 	if (DllHandle != 0)
 	{
 		IDLL* (*idll)(void) = (IDLL * (*)(void))GetProcAddress(DllHandle, "CreateDLL");
@@ -31,7 +31,8 @@ int main()
 		lpp::lppSyncPoint(livePP);
 		if (GetKeyState(VK_ESCAPE) & 0x8000)
 			Run = false;
-		dll->DoStuff();
+		if (dll)
+			dll->DoStuff();
 	}
 	lpp::lppDisableAllModulesSync(livePP, L"DLL.dll");
 	lpp::lppShutdown(livePP);

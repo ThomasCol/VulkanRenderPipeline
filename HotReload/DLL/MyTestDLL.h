@@ -20,7 +20,7 @@ public:
 	virtual void DoStuff() override;
 
 private:
-	int _myInt{0};
+	int _myInt{ 0 };
 };
 
 extern "C" DLL_API IDLL* CreateDLL();

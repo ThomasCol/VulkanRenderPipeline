@@ -4,7 +4,7 @@
 
 void DLL::DoStuff()
 {
-	_myInt += -10;
+	_myInt += 10000;
 	std::cout << _myInt << std::endl;
 }
 
